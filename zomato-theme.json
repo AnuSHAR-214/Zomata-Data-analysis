@@ -1,0 +1,7 @@
+{
+  "name": "Zomato Dashboard",
+  "dataColors": ["#0F6E56", "#5DCAA5", "#888780", "#D85A30", "#378ADD", "#EF9F27", "#7F77DD", "#D4537E"],
+  "background": "#FFFFFF",
+  "foreground": "#2C2C2A",
+  "tableAccent": "#0F6E56"
+}
