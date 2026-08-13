@@ -1,0 +1,7 @@
+---
+---
+
+@import "jekyll-theme-primer";
+
+/* Hide the repo-name heading the theme adds above the README */
+.markdown-body > h1:first-child { display: none; }
