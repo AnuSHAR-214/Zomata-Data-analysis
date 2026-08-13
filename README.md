@@ -2,6 +2,10 @@
 
 An end-to-end data analysis project on Zomato's Bangalore restaurant listings, taking raw scraped data through cleaning, a SQL Server database, and an interactive Power BI dashboard with AI-assisted analysis.
 
+## Live Dashboard
+
+**[View the interactive dashboard](https://anushar-214.github.io/Zomata-Data-analysis/zomato-analysis-dashboard.html)** — a browser-based version of the analysis (`zomato-analysis-dashboard.html`), viewable without Power BI Desktop.
+
 ## Overview
 
 This project answers questions like: *Where are Bangalore's restaurants concentrated? What drives a restaurant's rating up or down? How do cost, cuisine, and service type relate to customer ratings?* The final deliverable is a multi-page interactive Power BI report backed by a SQL Server database.
