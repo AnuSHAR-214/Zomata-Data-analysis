@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zomato Analysis Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0C0E14;
+  --bg-2:#12151E;
+  --panel:#171B26;
+  --panel-2:#1E2330;
+  --line:#2A3040;
+  --line-2:#39405400;
+  --txt:#EAEDF5;
+  --txt-2:#98A1B8;
+  --txt-3:#626B84;
+  --acc:#7C6BFF;
+  --acc-2:#9F8FFF;
+  --lime:#7DF9A6;
+  --amber:#FFC24B;
+  --cyan:#4BD6FF;
+  --violet:#C084FC;--slate:#7A879E;--teal:#2DD4BF;
+  --glow:0 0 0 1px rgba(124,107,255,.35), 0 0 24px -6px rgba(124,107,255,.45);
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --disp:"Sora",system-ui,sans-serif;
+  --body:"Inter",system-ui,-apple-system,sans-serif;
+  --r:10px;
+}
+body.light{
+  --bg:#F2F4F8;--bg-2:#FFFFFF;--panel:#FFFFFF;--panel-2:#F7F9FC;--line:#DFE4ED;
+  --txt:#161A22;--txt-2:#5A6479;--txt-3:#8A93A8;--slate:#94A0B5;--teal:#0EA5A0;--lime:#16A34A;--amber:#D97706;--cyan:#0284C7;--violet:#9333EA;
+  --glow:0 0 0 1px rgba(124,107,255,.3), 0 6px 20px -8px rgba(124,107,255,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--body);font-size:15px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(900px 500px at 12% -8%,rgba(124,107,255,.14),transparent 60%),
+             radial-gradient(700px 450px at 92% 4%,rgba(45,212,191,.12),transparent 60%)}
+body.light::before{opacity:.5}
+.wrap{position:relative;z-index:1;max-width:1340px;margin:0 auto;padding:18px 18px 70px}
+
+/* ---------- top bar ---------- */
+.top{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(145deg,var(--acc),#5A48E0);
+  display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:21px;color:#fff;flex:none;
+  box-shadow:0 6px 20px -8px var(--acc)}
+.brand h1{font-family:var(--disp);font-weight:800;font-size:clamp(19px,2.6vw,25px);margin:0;letter-spacing:-.02em;line-height:1.1}
+.brand .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--txt-3);margin-top:3px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button{font-family:var(--body);cursor:pointer}
+.btn{background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:9px 13px;border-radius:8px;
+  font-size:13px;display:inline-flex;align-items:center;gap:7px;transition:.15s}
+.btn:hover{border-color:var(--acc);color:var(--txt);transform:translateY(-1px)}
+.btn.ghost{background:transparent}
+.btn.prime{background:linear-gradient(145deg,var(--acc),#5A48E0);border-color:transparent;color:#fff;font-weight:600}
+.btn.prime:hover{box-shadow:0 8px 22px -8px var(--acc)}
+.btn kbd{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.08);border:1px solid var(--line);
+  padding:1px 5px;border-radius:4px;color:var(--txt-2)}
+body.light .btn kbd{background:rgba(0,0,0,.05)}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+/* ---------- filter bar ---------- */
+.filters{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:13px;margin-bottom:14px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:10px;align-items:end}
+.fld label{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--txt-3);margin-bottom:6px}
+.dd{position:relative}
+.dd-btn{width:100%;text-align:left;background:var(--panel-2);border:1px solid var(--line);color:var(--txt);
+  padding:9px 28px 9px 11px;border-radius:8px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.dd-btn:hover{border-color:var(--txt-3)}
+.dd-btn::after{content:"";position:absolute;right:11px;top:50%;margin-top:-2px;border:4px solid transparent;border-top-color:var(--txt-3)}
+.dd-btn .n{background:var(--acc);color:#fff;font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:20px;margin-right:6px}
+.dd-menu{display:none;position:absolute;z-index:60;top:calc(100% + 6px);left:0;min-width:100%;width:max-content;max-width:290px;
+  max-height:290px;overflow:auto;background:var(--bg-2);border:1px solid var(--line);border-radius:9px;
+  box-shadow:0 20px 50px -18px rgba(0,0,0,.8);padding:7px}
+.dd.open .dd-menu{display:block}
+.dd-search{width:100%;margin-bottom:6px;background:var(--panel);border:1px solid var(--line);color:var(--txt);
+  padding:7px 9px;border-radius:6px;font-size:12.5px;font-family:var(--body)}
+.dd-menu label{display:flex;gap:9px;align-items:center;padding:6px 7px;font-size:13px;cursor:pointer;border-radius:6px;
+  color:var(--txt);margin:0;text-transform:none;letter-spacing:0;font-family:var(--body)}
+.dd-menu label:hover{background:var(--panel-2)}
+.dd-menu input[type=checkbox]{accent-color:var(--acc);flex:none}
+.dd-menu .cnt{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--txt-3)}
+input,select{background:var(--panel-2);border:1px solid var(--line);color:var(--txt);padding:9px 11px;
+  border-radius:8px;font-size:13px;font-family:var(--body);width:100%}
+input[type=range]{padding:0;accent-color:var(--acc);background:none;border:none}
+.rv{font-family:var(--mono);font-size:11.5px;color:var(--txt-2);display:flex;justify-content:space-between}
+.seg{display:flex;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;background:none;border:none;color:var(--txt-2);padding:9px 4px;font-size:12px}
+.seg button.on{background:var(--acc);color:#fff;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.chips:empty{display:none}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--panel-2);border:1px solid var(--acc);
+  color:var(--txt);font-family:var(--mono);font-size:11px;padding:5px 9px;border-radius:20px}
+.chip b{color:var(--acc)}
+.chip:hover{background:var(--acc);color:#fff}
+.chip:hover b{color:#fff}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tab{background:var(--panel);border:1px solid var(--line);color:var(--txt-2);padding:9px 15px;border-radius:20px;
+  font-size:13px;transition:.15s;display:inline-flex;align-items:center;gap:7px}
+.tab:hover{color:var(--txt);border-color:var(--txt-3)}
+.tab[aria-selected=true]{background:linear-gradient(145deg,var(--acc),#5A48E0);border-color:transparent;color:#fff;font-weight:600;
+  box-shadow:0 6px 18px -8px var(--acc)}
+.tab i{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55}
+
+/* ---------- KPI ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:11px;margin-bottom:14px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;position:relative;overflow:hidden;transition:.2s}
+.kpi:hover{border-color:var(--acc);transform:translateY(-2px)}
+.kpi::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--accent,var(--acc));opacity:.8}
+.kpi .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--txt-3)}
+.kpi .val{font-family:var(--disp);font-weight:800;font-size:clamp(23px,3.4vw,31px);letter-spacing:-.03em;margin:5px 0 3px;line-height:1}
+.kpi .dlt{font-family:var(--mono);font-size:10.5px;color:var(--txt-2);display:flex;align-items:center;gap:6px}
+.kpi .dlt .up{color:var(--lime)}.kpi .dlt .dn{color:var(--amber)}
+.spark{position:absolute;right:10px;top:12px;opacity:.5}
+
+/* ---------- cards ---------- */
+.grid{display:grid;gap:13px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px 17px;min-width:0;
+  animation:rise .35s cubic-bezier(.2,.7,.3,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.card-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}
+.card h3{font-family:var(--disp);font-weight:700;font-size:15.5px;margin:0;letter-spacing:-.01em}
+.card .hint{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--txt-3);margin-top:4px}
+.mini{background:var(--panel-2);border:1px solid var(--line);color:var(--txt-2);font-family:var(--mono);font-size:10px;
+  padding:4px 8px;border-radius:6px}
+.mini:hover{color:var(--txt);border-color:var(--acc)}
+.mini.on{background:var(--acc);color:#fff;border-color:transparent}
+
+/* ---------- bars ---------- */
+.bar-row{display:block;width:100%;background:none;border:none;padding:6px 5px;border-radius:7px;text-align:left;
+  color:var(--txt);font-family:var(--body);transition:.13s}
+.bar-row:hover{background:var(--panel-2)}
+.bar-row.on{background:rgba(124,107,255,.13)}
+.bar-top{display:flex;justify-content:space-between;gap:10px;font-size:13px;align-items:baseline;margin-bottom:5px}
+.bar-top .lb{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-top .vl{font-family:var(--mono);font-size:11.5px;color:var(--txt-2);flex:none}
+.bar-track{height:8px;background:var(--panel-2);border-radius:5px;overflow:hidden}
+body.light .bar-track{background:#E7EBF2}
+.bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--acc),var(--acc-2));
+  transition:width .5s cubic-bezier(.2,.8,.25,1)}
+.bar-fill.c2{background:linear-gradient(90deg,var(--cyan),#7BE5FF)}
+.bar-fill.c3{background:linear-gradient(90deg,var(--amber),#FFDA8A)}
+.bar-fill.c4{background:linear-gradient(90deg,var(--violet),#C9B4FF)}
+.bar-row.on .bar-fill{box-shadow:0 0 12px -2px var(--acc)}
+
+/* charts */
+.hist{display:flex;align-items:flex-end;gap:2px;height:180px}
+.hcol{flex:1;display:flex;align-items:flex-end;height:100%;cursor:pointer}
+.hbar{width:100%;background:linear-gradient(180deg,var(--acc-2),var(--acc));border-radius:3px 3px 0 0;
+  transition:height .5s cubic-bezier(.2,.8,.25,1),filter .12s;min-height:1px}
+.hcol:hover .hbar{filter:brightness(1.5)}
+.hcol.dim .hbar{opacity:.28}
+.axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--txt-3);margin-top:7px}
+svg text{font-family:var(--mono)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:11px;font-family:var(--mono);font-size:11px;color:var(--txt-2)}
+.legend i{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:6px}
+
+/* tooltip */
+#tip{position:fixed;z-index:200;pointer-events:none;background:var(--bg-2);border:1px solid var(--acc);
+  border-radius:8px;padding:8px 11px;font-family:var(--mono);font-size:11.5px;color:var(--txt);
+  box-shadow:0 12px 30px -10px rgba(0,0,0,.8);opacity:0;transition:opacity .12s;max-width:250px}
+#tip.show{opacity:1}
+#tip b{color:var(--acc);font-size:12.5px}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px 9px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--txt-3);
+  cursor:pointer;user-select:none;position:sticky;top:0;background:var(--panel);z-index:2}
+th:hover{color:var(--acc)}
+th .ar{opacity:.4}
+th.sorted{color:var(--acc)}th.sorted .ar{opacity:1}
+td.num,th.num{text-align:right;font-family:var(--mono)}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--panel-2)}
+.scroll{max-height:340px;overflow:auto;border-radius:8px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px}
+
+/* influencers */
+.ki{display:grid;grid-template-columns:1fr auto;gap:5px 12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.ki:last-child{border:none}
+.ki .nm{font-size:13.5px}
+.ki .nm small{display:block;font-family:var(--mono);font-size:10px;color:var(--txt-3);letter-spacing:.05em;margin-top:2px}
+.ki .vv{font-family:var(--mono);font-weight:700;font-size:15px}
+.ki .bar{grid-column:1/-1;height:7px;background:var(--panel-2);border-radius:4px;position:relative;overflow:hidden}
+.ki .bar i{position:absolute;top:0;bottom:0;border-radius:4px;transition:width .5s}
+.ki .bar .mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--txt-3);opacity:.5}
+
+/* tree */
+.tree{display:flex;gap:11px;overflow-x:auto;padding-bottom:8px}
+.tcol{flex:0 0 205px;min-width:205px}
+.tcol h4{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt-3);
+  margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.node{display:block;width:100%;text-align:left;background:var(--panel-2);border:1px solid var(--line);
+  border-left:3px solid var(--cyan);color:var(--txt);padding:8px 10px;margin-bottom:6px;border-radius:8px;font-size:12.5px;transition:.13s}
+.node:hover{border-color:var(--acc);transform:translateX(2px)}
+.node.sel{background:linear-gradient(145deg,var(--acc),#5A48E0);border-color:transparent;color:#fff}
+.node b{display:block;font-family:var(--mono);font-size:14px;margin-top:2px}
+.node small{font-family:var(--mono);font-size:9.5px;opacity:.65}
+.node.add{border-left-color:var(--amber);background:transparent;border-style:dashed}
+
+/* Q&A */
+.qa{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:13px}
+.qa button{background:var(--panel-2);border:1px solid var(--line);color:var(--txt-2);border-radius:18px;padding:7px 13px;font-size:12.5px}
+.qa button:hover{border-color:var(--acc);color:var(--txt)}
+.qa button.on{background:var(--acc);border-color:transparent;color:#fff}
+.qaout{border-left:3px solid var(--amber);padding:11px 0 11px 14px;font-size:14.5px;min-height:46px;color:var(--txt-2)}
+.qaout b{color:var(--txt);font-family:var(--mono)}
+
+/* drawer */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(400px,92vw);background:var(--bg-2);border-left:1px solid var(--line);
+  z-index:150;transform:translateX(101%);transition:transform .28s cubic-bezier(.2,.8,.25,1);overflow-y:auto;padding:20px;
+  box-shadow:-20px 0 60px -20px rgba(0,0,0,.8)}
+.drawer.open{transform:none}
+.drawer h2{font-family:var(--disp);font-size:20px;margin:0 0 4px;letter-spacing:-.02em}
+.drawer .close{position:absolute;top:14px;right:14px}
+.dl{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.dl span:first-child{color:var(--txt-3)}
+.dl span:last-child{font-family:var(--mono)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tag{background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:3px 10px;font-size:11.5px;color:var(--txt-2)}
+
+/* palette */
+.scrim{position:fixed;inset:0;background:rgba(5,7,12,.7);backdrop-filter:blur(3px);z-index:140;opacity:0;pointer-events:none;transition:.2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.pal{position:fixed;top:14vh;left:50%;transform:translateX(-50%) scale(.97);width:min(560px,92vw);z-index:160;
+  background:var(--bg-2);border:1px solid var(--line);border-radius:14px;box-shadow:0 30px 80px -20px rgba(0,0,0,.85);
+  opacity:0;pointer-events:none;transition:.18s;overflow:hidden}
+.pal.on{opacity:1;pointer-events:auto;transform:translateX(-50%) scale(1)}
+.pal input{border:none;border-bottom:1px solid var(--line);border-radius:0;padding:15px 17px;font-size:15px;background:transparent}
+.pal-list{max-height:52vh;overflow:auto;padding:7px}
+.pal-item{display:flex;gap:11px;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:13.5px}
+.pal-item.sel{background:var(--panel-2)}
+.pal-item .k{font-family:var(--mono);font-size:9.5px;color:var(--txt-3);text-transform:uppercase;letter-spacing:.1em;
+  border:1px solid var(--line);padding:2px 7px;border-radius:5px;flex:none}
+.pal-item .d{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--txt-3)}
+
+/* misc */
+.banner{background:linear-gradient(90deg,rgba(255,194,75,.13),transparent);border:1px solid rgba(255,194,75,.35);
+  border-left:3px solid var(--amber);border-radius:8px;padding:11px 14px;font-size:12.5px;color:var(--txt-2);margin-bottom:14px}
+.banner b{color:var(--amber);font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase}
+.note{font-size:12.5px;color:var(--txt-2);line-height:1.55}
+.empty{padding:34px 0;text-align:center;color:var(--txt-3);font-size:13.5px}
+.hide{display:none!important}
+.foot{margin-top:22px;padding-top:13px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;
+  letter-spacing:.07em;color:var(--txt-3);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+
+.ic{width:15px;height:15px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px}
+.ic-lg{width:19px;height:19px}
+.ic-sm{width:12px;height:12px;stroke-width:2.1}
+.card h3{display:flex;align-items:center;gap:9px}
+.card h3 .ic{color:var(--acc);opacity:.9}
+.kpi .lbl{display:flex;align-items:center;gap:6px}
+.kpi .lbl .ic{width:12px;height:12px;color:var(--accent,var(--acc));opacity:.85}
+.fld label{display:flex;align-items:center;gap:5px}
+.fld label .ic{width:11px;height:11px;opacity:.7}
+.tab{gap:7px}
+.drawer h2{display:flex;align-items:center;gap:9px}
+.dl span:first-child{display:flex;align-items:center;gap:8px}
+.dl .ic{width:13px;height:13px;color:var(--txt-3)}
+.pal-item .ic{width:14px;height:14px;color:var(--acc)}
+.banner b{display:inline-flex;align-items:center;gap:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(max-width:640px){.wrap{padding:12px 11px 50px}.tab{padding:8px 12px;font-size:12.5px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-store" viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.8 6.2 20.9l1.1-6.5L2.6 9.8l6.5-.9z"/></symbol>
+<symbol id="i-cash" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/></symbol>
+<symbol id="i-moped" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="2.8"/><circle cx="18.5" cy="17.5" r="2.8"/><path d="M8.3 17.5h7.4M5.5 14.7V9h4l3.4 5.4"/><path d="M15 6h3l2 6.5"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="i-thumb" viewBox="0 0 24 24"><path d="M7 21V10l4.5-7c1.4 0 2.2 1 2 2.3L13 9h5.5c1.4 0 2.4 1.3 2 2.7l-1.9 7A2.5 2.5 0 0 1 16 21z"/><path d="M7 10H3v11h4"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></symbol>
+<symbol id="i-bubble" viewBox="0 0 24 24"><circle cx="8" cy="9" r="4.2"/><circle cx="17" cy="15.5" r="3"/><circle cx="17.5" cy="6" r="1.8"/></symbol>
+<symbol id="i-bowl" viewBox="0 0 24 24"><path d="M3 11h18a9 9 0 0 1-18 0z"/><path d="M12 11V6M9.5 6a2.5 2.5 0 1 1 5 0"/><path d="M2 21h20"/></symbol>
+<symbol id="i-trend" viewBox="0 0 24 24"><path d="M3 16l5.5-6 4 4L21 6"/><path d="M16 6h5v5"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.4"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 21h18"/><rect x="4" y="12" width="4" height="6" rx="1"/><rect x="10" y="7" width="4" height="11" rx="1"/><rect x="16" y="3" width="4" height="15" rx="1"/></symbol>
+<symbol id="i-pie" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M14.5 2.5A9 9 0 0 1 21.5 9.5h-7z"/></symbol>
+<symbol id="i-scatter" viewBox="0 0 24 24"><path d="M3 3v18h18"/><circle cx="8" cy="15" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="16.5" cy="12" r="1.6"/><circle cx="19" cy="6" r="1.6"/></symbol>
+<symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5A3.5 3.5 0 0 1 16.5 11"/><path d="M12 14v3M8.5 20h7l-.7-3h-5.6z"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18.5 16.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-6a8 8 0 0 1 8-8h2a8 8 0 0 1 8 3z"/><path d="M9 11h6M9 15h4"/></symbol>
+<symbol id="i-tree" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="5" rx="1.5"/><rect x="2.5" y="16.5" width="6" height="5" rx="1.5"/><rect x="15.5" y="16.5" width="6" height="5" rx="1.5"/><path d="M12 7.5v4M5.5 16.5v-2.5h13v2.5"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M3 15v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/></symbol>
+<symbol id="i-reset" viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3 3v5h5"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.8h.01"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></symbol>
+<symbol id="i-vote" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/></symbol>
+<symbol id="i-page" viewBox="0 0 24 24"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/></symbol>
+</defs></svg>
+<div id="tip"></div>
+<div class="scrim" id="scrim"></div>
+
+<div class="pal" id="pal">
+  <input id="palQ" placeholder="Search restaurants, locations, cuisines, pages…" autocomplete="off">
+  <div class="pal-list" id="palList"></div>
+</div>
+
+<aside class="drawer" id="drawer">
+  <button class="btn ghost close" id="drawerClose"><svg class="ic"><use href="#i-close"/></svg></button>
+  <div id="drawerBody"></div>
+</aside>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">Z</div>
+      <div>
+        <h1>Zomato Analysis Dashboard</h1>
+        <div class="sub" id="sub">Bengaluru · 12,464 restaurants</div>
+      </div>
+    </div>
+    <div class="tools">
+      <button class="btn" id="openPal"><svg class="ic"><use href="#i-search"/></svg>Search <kbd>Ctrl K</kbd></button>
+      <button class="btn" id="themeBtn"><svg class="ic"><use href="#i-sun"/></svg><span>Light</span></button>
+      <button class="btn" id="csvBtn"><svg class="ic"><use href="#i-upload"/></svg>Load CSV</button>
+      <input type="file" id="csvInput" accept=".csv" class="hide">
+      <button class="btn prime" id="resetBtn"><svg class="ic"><use href="#i-reset"/></svg>Reset</button>
+    </div>
+  </header>
+
+  <div class="banner" id="banner">
+    <b><svg class="ic ic-sm"><use href="#i-info"/></svg>Demo data</b> — synthetic dataset calibrated to the README figures (12,464 restaurants · 3.62 avg rating · ₹488 avg cost · 52% online).
+    Load <code>Zomato_Data_cleaned_fixed.csv</code> to drive every page from your real cleaned data.
+  </div>
+
+  <section class="filters">
+    <div class="fgrid">
+      <div class="fld"><label><svg class="ic"><use href="#i-pin"/></svg>Location</label><div class="dd" id="ddLoc"><button class="dd-btn" type="button">All locations</button><div class="dd-menu"></div></div></div>
+      <div class="fld"><label><svg class="ic"><use href="#i-bowl"/></svg>Cuisine</label><div class="dd" id="ddCui"><button class="dd-btn" type="button">All cuisines</button><div class="dd-menu"></div></div></div>
+      <div class="fld"><label><svg class="ic"><use href="#i-moped"/></svg>Service type</label><div class="dd" id="ddSvc"><button class="dd-btn" type="button">All services</button><div class="dd-menu"></div></div></div>
+      <div class="fld"><label><svg class="ic"><use href="#i-store"/></svg>Restaurant type</label><div class="dd" id="ddTyp"><button class="dd-btn" type="button">All formats</button><div class="dd-menu"></div></div></div>
+      <div class="fld"><label><svg class="ic"><use href="#i-moped"/></svg>Online ordering</label><div class="seg" id="segOn">
+        <button data-v="" class="on">Any</button><button data-v="yes">Yes</button><button data-v="no">No</button></div></div>
+      <div class="fld"><label><svg class="ic"><use href="#i-star"/></svg>Rating status</label><select id="selStat">
+        <option value="">All statuses</option><option>Rated</option><option>New</option><option>Not rated</option><option>Missing</option></select></div>
+      <div class="fld"><label><svg class="ic"><use href="#i-cash"/></svg>Max cost for two</label>
+        <input type="range" id="rCost" min="100" max="3000" step="50" value="3000">
+        <div class="rv"><span>₹100</span><span id="rCostV">₹3,000+</span></div></div>
+      <div class="fld"><label><svg class="ic"><use href="#i-star"/></svg>Min rating</label>
+        <input type="range" id="rRate" min="0" max="49" step="1" value="0">
+        <div class="rv"><span>any</span><span id="rRateV">0.0 ★</span></div></div>
+    </div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true"  data-page="overview"><svg class="ic"><use href="#i-grid"/></svg>Overview</button>
+    <button class="tab" role="tab" aria-selected="false" data-page="cuisine"><svg class="ic"><use href="#i-bowl"/></svg>Cuisine &amp; Cost</button>
+    <button class="tab" role="tab" aria-selected="false" data-page="service"><svg class="ic"><use href="#i-moped"/></svg>Service Types</button>
+    <button class="tab" role="tab" aria-selected="false" data-page="ratings"><svg class="ic"><use href="#i-star"/></svg>Ratings Deep Dive</button>
+    <button class="tab" role="tab" aria-selected="false" data-page="ai"><svg class="ic"><use href="#i-spark"/></svg>AI Insights</button>
+  </nav>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="page" id="p-overview">
+    <div class="grid g2">
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-pin"/></svg>Restaurant density</h3><div class="hint">Top locations · click to filter</div></div>
+        <button class="mini" data-sort="ovLoc">by count</button></div><div id="ovLoc"></div></div>
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-star"/></svg>Rating by location</h3><div class="hint">100+ rated listings</div></div></div><div id="ovLocRate"></div></div>
+    </div>
+    <div class="grid g2" style="margin-top:13px">
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-moped"/></svg>Service mix</h3><div class="hint">Restaurants can list several services</div></div></div><div id="ovSvc"></div></div>
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-store"/></svg>Restaurant formats</h3><div class="hint">Top formats · click to filter</div></div></div><div id="ovTyp"></div></div>
+    </div>
+    <div class="card" style="margin-top:13px"><div class="card-h"><div><h3><svg class="ic"><use href="#i-bubble"/></svg>Location matrix</h3>
+      <div class="hint">Bubble = restaurant count · x = avg cost · y = avg rating · click to filter</div></div></div>
+      <svg id="ovBubble" viewBox="0 0 900 380" style="width:100%;height:auto"></svg></div>
+  </section>
+
+  <section class="page hide" id="p-cuisine">
+    <div class="grid g2">
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-bowl"/></svg>Most-served cuisines</h3><div class="hint">Via cuisine bridge · click to filter</div></div></div><div id="cuCount"></div></div>
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-trophy"/></svg>Best-rated cuisines</h3><div class="hint">80+ rated restaurants</div></div></div><div id="cuRate"></div></div>
+    </div>
+    <div class="grid g2" style="margin-top:13px">
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-trend"/></svg>Cost vs rating</h3><div class="hint">Average rating per price band</div></div></div>
+        <svg id="cuLine" viewBox="0 0 620 280" style="width:100%;height:auto"></svg>
+        <p class="note" id="cuNote" style="margin-top:8px"></p></div>
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-tag"/></svg>Price brackets</h3><div class="hint">Click to filter by band</div></div></div><div id="cuBands"></div></div>
+    </div>
+  </section>
+
+  <section class="page hide" id="p-service">
+    <div class="grid g2">
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-list"/></svg>Service scorecard</h3><div class="hint">Click a header to sort</div></div></div>
+        <div class="scroll"><table id="svcTbl"></table></div></div>
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-moped"/></svg>Online ordering impact</h3><div class="hint">Rating split by delivery availability</div></div></div>
+        <div id="svcOn"></div><p class="note" id="svcNote" style="margin-top:11px"></p></div>
+    </div>
+    <div class="grid g2" style="margin-top:13px">
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-calendar"/></svg>Table booking</h3><div class="hint">Reservations stay a minority service</div></div></div><div id="svcBook"></div></div>
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-grid"/></svg>Service bundles</h3><div class="hint">Most common combinations</div></div></div><div id="svcCombo"></div></div>
+    </div>
+  </section>
+
+  <section class="page hide" id="p-ratings">
+    <div class="grid g2">
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-chart"/></svg>Rating distribution</h3><div class="hint">Drag across bars to filter a range</div></div>
+        <button class="mini" id="histClear">clear range</button></div>
+        <div class="hist" id="rtHist"></div><div class="axis"><span>1.5★</span><span>2.5★</span><span>3.5★</span><span>4.5★</span></div></div>
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-pie"/></svg>Rating status</h3><div class="hint">New kept apart from missing</div></div></div>
+        <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+          <svg id="rtDonut" viewBox="0 0 130 130" width="160" height="160"></svg>
+          <div id="rtLeg" style="flex:1;min-width:165px"></div></div></div>
+    </div>
+    <div class="grid g2" style="margin-top:13px">
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-scatter"/></svg>Votes vs rating</h3><div class="hint">Hover a dot · log vote scale</div></div></div>
+        <svg id="rtScat" viewBox="0 0 640 320" style="width:100%;height:auto"></svg>
+        <p class="note" id="rtNote" style="margin-top:6px"></p></div>
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-trophy"/></svg>Leaderboard</h3><div class="hint">Click a row for detail · sortable</div></div>
+        <button class="mini" id="minVotes" data-v="200">200+ votes</button></div>
+        <div class="scroll"><table id="rtTop"></table></div></div>
+    </div>
+  </section>
+
+  <section class="page hide" id="p-ai">
+    <div class="grid g2">
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-spark"/></svg>Key influencers</h3><div class="hint">What moves rating off baseline · click to filter</div></div></div>
+        <div id="ki"></div><p class="note" id="kiNote" style="margin-top:11px"></p></div>
+      <div class="card"><div class="card-h"><div><h3><svg class="ic"><use href="#i-chat"/></svg>Ask the data</h3><div class="hint">Recomputed against your filters</div></div></div>
+        <div class="qa" id="qa"></div><div class="qaout" id="qaOut">Pick a question, or press <b>Ctrl K</b> to search anything.</div></div>
+    </div>
+    <div class="card" style="margin-top:13px"><div class="card-h">
+      <div><h3><svg class="ic"><use href="#i-tree"/></svg>Decomposition tree</h3><div class="hint">Click a node to drill down</div></div>
+      <button class="mini" id="treeReset">reset tree</button></div>
+      <p class="note" id="treePath" style="margin-bottom:11px"></p>
+      <div class="tree" id="tree"></div></div>
+  </section>
+
+  <footer class="foot">
+    <span>Zomato Bengaluru snapshot · 51,717 raw rows → 12,464 restaurants</span>
+    <span id="stamp">Demo dataset</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+/* ============ 1. DATA ============ */
+function mul(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rnd=mul(20190412);
+function gauss(){let u=0,v=0;while(!u)u=rnd();while(!v)v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function pick(a,w){const t=w.reduce((x,y)=>x+y,0);let r=rnd()*t;for(let i=0;i<a.length;i++){r-=w[i];if(r<=0)return a[i]}return a[a.length-1]}
+const LOCS=[["Whitefield",7.4],["Electronic City",6.1],["BTM",5.9],["HSR",5.2],["Marathahalli",4.8],["JP Nagar",4.4],["Jayanagar",4.1],
+["Indiranagar",3.9],["Koramangala 5th Block",3.6],["Bellandur",3.2],["Bannerghatta Road",3.1],["Rajajinagar",2.9],["Banashankari",2.8],
+["Sarjapur Road",2.7],["Ulsoor",2.4],["Brigade Road",2.2],["Kalyan Nagar",2.1],["Malleshwaram",2.0],["Basavanagudi",1.9],["MG Road",1.8],
+["Frazer Town",1.7],["Church Street",1.5],["Banaswadi",1.5],["Kammanahalli",1.4],["Old Airport Road",1.3],["Residency Road",1.2],
+["Cunningham Road",1.0],["Domlur",1.0],["Richmond Road",0.9],["Lavelle Road",0.8],["St. Marks Road",0.7],["Shanti Nagar",0.7]];
+const CUIS=[["North Indian",13],["Chinese",10.5],["South Indian",8.2],["Fast Food",7.4],["Biryani",5.6],["Desserts",5.2],["Cafe",4.4],
+["Continental",3.6],["Bakery",3.4],["Beverages",3.2],["Italian",2.9],["Mughlai",2.7],["Ice Cream",2.5],["Street Food",2.4],["Andhra",2.1],
+["Kerala",1.9],["Pizza",1.8],["Burger",1.6],["Rolls",1.5],["Momos",1.4],["Seafood",1.2],["Arabian",1.1],["Thai",0.9],["Asian",0.9],
+["Healthy Food",0.8],["Bengali",0.6],["Japanese",0.5]];
+const TYPES=[["Quick Bites",34],["Casual Dining",26],["Cafe",8],["Delivery",8],["Dessert Parlor",7],["Bakery",6],["Takeaway",4],
+["Bar",3],["Pub",2],["Fine Dining",1.4],["Food Court",1.2],["Lounge",1]];
+const SVCS=[["Delivery",30],["Dine-out",26],["Desserts",11],["Cafes",8],["Drinks & nightlife",6],["Buffet",5],["Pubs and bars",5]];
+const NA=["Spice","Anand","Empire","Truffles","Meghana","Nandhana","Onesta","Punjabi","Tandoor","Chai","Biryani","Coastal","Rasta",
+"Green","Urban","Sultan","Kabab","Cake","Brew","Rolls","Dosa","Momo","Fresh","Royal","Village","Corner","Copper","Pearl"];
+const NB=["House","Kitchen","Point","Cafe","Foods","Junction","Express","Darbar","Corner","Hub","Station","Grill","Bites","Treat","Bowl","Court","Zone","Adda"];
+function genRow(){
+  const loc=pick(LOCS.map(x=>x[0]),LOCS.map(x=>x[1])), typ=pick(TYPES.map(x=>x[0]),TYPES.map(x=>x[1]));
+  const lf={"Fine Dining":1.9,"Lounge":1.7,"Bar":1.5,"Pub":1.45,"Casual Dining":1.15,"Cafe":1.0,"Food Court":.75,"Quick Bites":.68,
+    "Delivery":.7,"Takeaway":.62,"Bakery":.6,"Dessert Parlor":.58}[typ]||1;
+  let cost=Math.max(50,Math.min(6000,Math.round(Math.exp(6.0+gauss()*.55)*lf/50)*50));
+  const nc=1+Math.floor(Math.pow(rnd(),1.6)*3.4),cs=new Set();while(cs.size<nc)cs.add(pick(CUIS.map(x=>x[0]),CUIS.map(x=>x[1])));
+  let services;
+  if(rnd()<.30)services=["Delivery","Dine-out"];
+  else{const ns=rnd()<.5?1:(rnd()<.72?2:3),ss=new Set();while(ss.size<ns)ss.add(pick(SVCS.map(x=>x[0]),SVCS.map(x=>x[1])));services=[...ss]}
+  const name=NA[Math.floor(rnd()*NA.length)]+" "+NB[Math.floor(rnd()*NB.length)]+(rnd()<.22?" - "+loc.split(" ")[0]:"");
+  let r=3.30+(cost>1050?.34:0)+(cost>2000?.10:0)+(["Casual Dining","Cafe","Fine Dining","Lounge","Bar","Pub"].includes(typ)?.17:0)+gauss()*.34;
+  const votes=Math.max(0,Math.round(Math.exp(2.1+gauss()*1.5+(r-3.4)*1.1)));
+  return{name,loc,typ,cost,cuisines:[...cs],services,rating:r,votes,reviews:Math.round(votes*(.35+rnd()*.4)),
+    online:false,book:false,status:"Rated",_o:rnd()+(services.includes("Delivery")?.35:0)-(cost>1200?.25:0),
+    _b:rnd()+(cost>900?.9:0)+(["Casual Dining","Fine Dining","Bar","Lounge","Pub"].includes(typ)?.5:0)};
+}
+function buildDemo(){
+  const rows=[];for(let i=0;i<12464;i++)rows.push(genRow());
+  const d=3.62-rows.reduce((a,b)=>a+b.rating,0)/rows.length;
+  rows.forEach(r=>r.rating=Math.round(Math.min(4.9,Math.max(1.8,r.rating+d))*10)/10);
+  const k=488/(rows.reduce((a,b)=>a+b.cost,0)/rows.length);
+  rows.forEach(r=>r.cost=Math.max(50,Math.round(r.cost*k/10)*10));
+  [...rows].sort((a,b)=>b._o-a._o).slice(0,Math.round(rows.length*.52)).forEach(r=>r.online=true);
+  [...rows].sort((a,b)=>b._b-a._b).slice(0,Math.round(rows.length*.08)).forEach(r=>r.book=true);
+  rows.forEach(r=>{const u=rnd();
+    if(u<.050){r.status="New";r.rating=null;r.votes=0;r.reviews=0}
+    else if(u<.072)  {r.status="Not rated";r.rating=null}
+    else if(u<.085){r.status="Missing";r.rating=null}
+    delete r._o;delete r._b});
+  return rows;
+}
+let ROWS=buildDemo(),IS_DEMO=true;
+
+/* ============ 2. CSV ============ */
+function parseCSV(t){const rows=[];let row=[],c="",q=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(q){if(ch==='"'){if(t[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}
+    else if(ch==='"')q=true;else if(ch===','){row.push(c);c=""}
+    else if(ch==='\n'){row.push(c);rows.push(row);row=[];c=""}else if(ch!=='\r')c+=ch}
+  if(c.length||row.length){row.push(c);rows.push(row)}return rows}
+function findCol(h,c){const n=s=>s.toLowerCase().replace(/[^a-z0-9]/g,""),H=h.map(n);
+  for(const x of c){const i=H.indexOf(n(x));if(i>-1)return i}
+  for(const x of c){const i=H.findIndex(v=>v.includes(n(x)));if(i>-1)return i}return -1}
+function loadCSV(text){
+  const raw=parseCSV(text).filter(r=>r.length>1);if(raw.length<2)throw new Error("no rows found");
+  const h=raw[0],ix={name:findCol(h,["Name","Restaurant_Name"]),loc:findCol(h,["Location","City","area"]),
+    cui:findCol(h,["Cuisines","cuisine"]),cost:findCol(h,["Cost_For_Two","Average_Cost","approx_cost(for two people)","approx_cost","Cost"]),
+    rate:findCol(h,["Rating","rate"]),stat:findCol(h,["Rating_Status"]),svc:findCol(h,["Service_Types","listed_in(type)"]),
+    typ:findCol(h,["Rest_Type","Restaurant_Type"]),on:findCol(h,["online_order"]),bk:findCol(h,["book_table"]),
+    vt:findCol(h,["Votes"]),rv:findCol(h,["Review_Count"])};
+  if(ix.name<0||ix.loc<0)throw new Error("need at least Name and Location columns");
+  const yes=v=>/^(yes|y|true|1)$/i.test(String(v||"").trim());
+  const num=v=>{const n=parseFloat(String(v||"").replace(/[₹,\s]/g,""));return isFinite(n)?n:null};
+  const out=[];
+  for(let i=1;i<raw.length;i++){const r=raw[i];if(!r[ix.name])continue;
+    const rating=ix.rate>-1?num(String(r[ix.rate]).split("/")[0]):null;
+    let st=ix.stat>-1?(r[ix.stat]||"").trim():"";if(!st)st=rating==null?"Missing":"Rated";
+    out.push({name:(r[ix.name]||"").trim(),loc:(r[ix.loc]||"Unknown").trim(),
+      typ:ix.typ>-1?((r[ix.typ]||"Unknown").split(",")[0].trim()||"Unknown"):"Unknown",
+      cost:ix.cost>-1?(num(r[ix.cost])||0):0,
+      cuisines:ix.cui>-1?String(r[ix.cui]||"").split(",").map(s=>s.trim()).filter(Boolean):[],
+      services:ix.svc>-1?String(r[ix.svc]||"").split(",").map(s=>s.trim()).filter(Boolean):[],
+      rating:(rating!=null&&rating>0)?rating:null,votes:ix.vt>-1?(num(r[ix.vt])||0):0,
+      reviews:ix.rv>-1?(num(r[ix.rv])||0):0,online:ix.on>-1?yes(r[ix.on]):false,
+      book:ix.bk>-1?yes(r[ix.bk]):false,status:st})}
+  if(!out.length)throw new Error("no usable rows");return out}
+
+/* ============ 3. STATE ============ */
+const F={loc:new Set(),cui:new Set(),svc:new Set(),typ:new Set(),online:"",stat:"",maxCost:3000,minRate:0,q:"",rateBand:null};
+let PAGE="overview",TREE=[],SORT={svc:["n",-1],top:["rating",-1]},MINV=200,QAi=null;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const nf=n=>Number(n).toLocaleString("en-IN"),inr=n=>"₹"+nf(Math.round(n));
+const pct=(a,b)=>b?Math.round(a/b*1000)/10:0,avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+const rated=r=>r.filter(x=>x.rating!=null);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function applyF(rows){const q=F.q.toLowerCase();return rows.filter(r=>{
+  if(F.loc.size&&!F.loc.has(r.loc))return false;
+  if(F.typ.size&&!F.typ.has(r.typ))return false;
+  if(F.cui.size&&!r.cuisines.some(c=>F.cui.has(c)))return false;
+  if(F.svc.size&&!r.services.some(s=>F.svc.has(s)))return false;
+  if(F.online==="yes"&&!r.online)return false;
+  if(F.online==="no"&&r.online)return false;
+  if(F.stat&&r.status!==F.stat)return false;
+  if(F.maxCost<3000&&r.cost>F.maxCost)return false;
+  if(F.minRate>0&&(r.rating==null||r.rating<F.minRate))return false;
+  if(F.rateBand&&(r.rating==null||r.rating<F.rateBand[0]||r.rating>F.rateBand[1]))return false;
+  if(q&&!r.name.toLowerCase().includes(q))return false;
+  return true})}
+function cnt(rows,f){const m=new Map();rows.forEach(r=>{const k=f(r);if(k!=null)m.set(k,(m.get(k)||0)+1)});return m}
+function cntM(rows,k){const m=new Map();rows.forEach(r=>r[k].forEach(v=>m.set(v,(m.get(v)||0)+1)));return m}
+function stats(rows,f){const m=new Map();rows.forEach(r=>{const v=f(r),ks=Array.isArray(v)?v:[v];
+  ks.forEach(k=>{if(k==null)return;let o=m.get(k);if(!o){o={n:0,rs:[],cs:0,cn:0,on:0,bk:0,vt:0};m.set(k,o)}
+    o.n++;if(r.rating!=null)o.rs.push(r.rating);if(r.cost>0){o.cs+=r.cost;o.cn++}
+    if(r.online)o.on++;if(r.book)o.bk++;o.vt+=r.votes||0})});return m}
+const sortM=m=>[...m.entries()].sort((a,b)=>b[1]-a[1]);
+const BANDS=[[0,200,"Under ₹200"],[200,400,"₹200–400"],[400,600,"₹400–600"],[600,1050,"₹600–1,050"],[1050,2000,"₹1,050–2,000"],[2000,1e9,"Over ₹2,000"]];
+const band=c=>{for(const b of BANDS)if(c>=b[0]&&c<b[1])return b[2];return BANDS[0][2]};
+
+/* ============ 4. TOOLTIP ============ */
+const TIP=$("#tip");
+function tipShow(e,html){TIP.innerHTML=html;TIP.classList.add("show");tipMove(e)}
+function tipMove(e){const r=TIP.getBoundingClientRect();
+  let x=e.clientX+14,y=e.clientY+14;
+  if(x+r.width>innerWidth-8)x=e.clientX-r.width-14;
+  if(y+r.height>innerHeight-8)y=e.clientY-r.height-14;
+  TIP.style.left=x+"px";TIP.style.top=y+"px"}
+function tipHide(){TIP.classList.remove("show")}
+document.addEventListener("mousemove",e=>{if(TIP.classList.contains("show"))tipMove(e)});
+
+/* ============ 5. BARS ============ */
+function bars(el,items,o={}){
+  o=Object.assign({fmt:v=>nf(v),cls:"",key:null,max:null,empty:"No data for these filters.",tip:null},o);
+  if(!items.length){el.innerHTML='<div class="empty">'+o.empty+"</div>";return}
+  const mx=o.max!=null?o.max:Math.max(...items.map(i=>i.value))||1;
+  el.innerHTML=items.map((i,ix)=>{
+    const on=o.key&&F[o.key].has(i.label),tag=o.key?"button":"div";
+    return `<${tag} class="bar-row ${on?"on":""}" ${o.key?`data-k="${o.key}" data-v="${esc(i.label)}" type="button"`:""} data-ix="${ix}">
+      <span class="bar-top"><span class="lb">${esc(i.label)}</span><span class="vl">${o.fmt(i.value,i)}</span></span>
+      <span class="bar-track"><span class="bar-fill ${o.cls}" style="width:${Math.max(1.5,i.value/mx*100)}%"></span></span></${tag}>`}).join("");
+  if(o.tip)el.querySelectorAll(".bar-row").forEach(b=>{
+    const it=items[+b.dataset.ix];
+    b.addEventListener("mouseenter",e=>tipShow(e,o.tip(it)));
+    b.addEventListener("mouseleave",tipHide)});
+}
+document.addEventListener("click",e=>{const b=e.target.closest(".bar-row[data-k]");
+  if(b){tipHide();const s=F[b.dataset.k];s.has(b.dataset.v)?s.delete(b.dataset.v):s.add(b.dataset.v);render()}});
+
+/* ============ 6. FILTER UI ============ */
+function dd(id,key,all,vals){
+  const d=$("#"+id),btn=d.querySelector(".dd-btn"),menu=d.querySelector(".dd-menu");
+  btn.addEventListener("click",e=>{e.stopPropagation();const open=d.classList.contains("open");
+    $$(".dd").forEach(x=>x.classList.remove("open"));
+    if(!open){fill("");d.classList.add("open");const s=menu.querySelector(".dd-search");if(s)s.focus()}});
+  function fill(q){
+    const list=vals().filter(([v])=>!q||v.toLowerCase().includes(q.toLowerCase()));
+    menu.innerHTML=`<input class="dd-search" placeholder="Filter…" value="${esc(q)}">`+
+      (list.length?list.map(([v,c])=>`<label><input type="checkbox" value="${esc(v)}" ${F[key].has(v)?"checked":""}><span>${esc(v)}</span><span class="cnt">${nf(c)}</span></label>`).join("")
+      :'<div class="empty" style="padding:16px">No match</div>');
+    const s=menu.querySelector(".dd-search");
+    s.addEventListener("input",()=>{const p=s.selectionStart;fill(s.value);const n=menu.querySelector(".dd-search");n.focus();n.setSelectionRange(p,p)});
+    s.addEventListener("click",e=>e.stopPropagation());
+    menu.querySelectorAll('input[type=checkbox]').forEach(i=>i.addEventListener("change",()=>{
+      i.checked?F[key].add(i.value):F[key].delete(i.value);render();fill(menu.querySelector(".dd-search").value)}));
+  }
+  d.addEventListener("click",e=>e.stopPropagation());
+  d._sync=()=>{const n=F[key].size;btn.innerHTML=n===0?all:(n===1?esc([...F[key]][0]):`<span class="n">${n}</span>selected`)};
+}
+document.addEventListener("click",()=>$$(".dd").forEach(d=>d.classList.remove("open")));
+dd("ddLoc","loc","All locations",()=>sortM(cnt(ROWS,r=>r.loc)));
+dd("ddCui","cui","All cuisines",()=>sortM(cntM(ROWS,"cuisines")));
+dd("ddSvc","svc","All services",()=>sortM(cntM(ROWS,"services")));
+dd("ddTyp","typ","All formats",()=>sortM(cnt(ROWS,r=>r.typ)));
+$("#segOn").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  F.online=b.dataset.v;$$("#segOn button").forEach(x=>x.classList.toggle("on",x===b));render()});
+$("#selStat").addEventListener("change",e=>{F.stat=e.target.value;render()});
+$("#rCost").addEventListener("input",e=>{F.maxCost=+e.target.value;render()});
+$("#rRate").addEventListener("input",e=>{F.minRate=+e.target.value/10;render()});
+function resetAll(){F.loc.clear();F.cui.clear();F.svc.clear();F.typ.clear();
+  F.online="";F.stat="";F.maxCost=3000;F.minRate=0;F.q="";F.rateBand=null;TREE=[];QAi=null;
+  $("#selStat").value="";$("#rCost").value=3000;$("#rRate").value=0;
+  $$("#segOn button").forEach((x,i)=>x.classList.toggle("on",i===0));render()}
+$("#resetBtn").addEventListener("click",resetAll);
+$("#themeBtn").addEventListener("click",()=>{document.body.classList.toggle("light");
+  const lt=document.body.classList.contains("light");
+  $("#themeBtn").innerHTML=`<svg class="ic"><use href="#i-${lt?"moon":"sun"}"/></svg><span>${lt?"Dark":"Light"}</span>`;render()});
+$("#csvBtn").addEventListener("click",()=>$("#csvInput").click());
+$("#csvInput").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{try{ROWS=loadCSV(rd.result);IS_DEMO=false;
+      $("#banner").innerHTML="<b><svg class=\"ic ic-sm\"><use href=\"#i-vote\"/></svg>Live data</b> "+esc(f.name)+" — "+nf(ROWS.length)+" restaurants loaded. Every page now runs on your file.";
+      $("#stamp").textContent="Source: "+f.name;resetAll();
+    }catch(err){$("#banner").innerHTML="<b><svg class=\"ic ic-sm\"><use href=\"#i-info\"/></svg>Could not read file</b> "+esc(err.message)+". Expecting a CSV with Name and Location at minimum. Still showing demo data."}};
+  rd.readAsText(f)});
+$$(".tab").forEach(t=>t.addEventListener("click",()=>{PAGE=t.dataset.page;
+  $$(".tab").forEach(x=>x.setAttribute("aria-selected",x===t));
+  $$(".page").forEach(p=>p.classList.toggle("hide",p.id!=="p-"+PAGE));render()}));
+
+function chips(){
+  const c=[];const add=(k,v,l)=>c.push(`<button class="chip" data-k="${k}" data-v="${esc(v)}">${esc(l)} <b>✕</b></button>`);
+  F.loc.forEach(v=>add("loc",v,v));F.typ.forEach(v=>add("typ",v,v));
+  F.cui.forEach(v=>add("cui",v,v));F.svc.forEach(v=>add("svc",v,v));
+  if(F.online)add("online","","Online: "+F.online);
+  if(F.stat)add("stat","","Status: "+F.stat);
+  if(F.maxCost<3000)add("maxCost","","≤ ₹"+nf(F.maxCost));
+  if(F.minRate>0)add("minRate","","≥ "+F.minRate.toFixed(1)+"★");
+  if(F.rateBand)add("rateBand","",F.rateBand[0].toFixed(1)+"–"+F.rateBand[1].toFixed(1)+"★");
+  if(F.q)add("q","",'"'+F.q+'"');
+  const el=$("#chips");el.innerHTML=c.join("");
+  el.querySelectorAll(".chip").forEach(ch=>ch.addEventListener("click",()=>{
+    const k=ch.dataset.k;
+    if(F[k] instanceof Set)F[k].delete(ch.dataset.v);
+    else if(k==="maxCost"){F.maxCost=3000;$("#rCost").value=3000}
+    else if(k==="minRate"){F.minRate=0;$("#rRate").value=0}
+    else if(k==="rateBand")F.rateBand=null;
+    else if(k==="q")F.q="";
+    else if(k==="online"){F.online="";$$("#segOn button").forEach((x,i)=>x.classList.toggle("on",i===0))}
+    else{F[k]="";$("#selStat").value=""}
+    render()}));
+  $$(".dd").forEach(d=>d._sync&&d._sync());
+  $("#rCostV").textContent=F.maxCost>=3000?"₹3,000+":"₹"+nf(F.maxCost);
+  $("#rRateV").textContent=F.minRate.toFixed(1)+" ★";
+}
+
+/* ============ 7. KPIs ============ */
+function tween(el,to,fmt){
+  const from=parseFloat(el.dataset.v||"0");el.dataset.v=to;
+  const rm=typeof window!=="undefined"&&window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+  if(rm||typeof requestAnimationFrame!=="function"){el.textContent=fmt(to);return}
+  const t0=performance.now(),D=520;
+  (function step(t){const p=Math.min(1,(t-t0)/D),e=1-Math.pow(1-p,3);
+    el.textContent=fmt(from+(to-from)*e);if(p<1)requestAnimationFrame(step)})(t0);
+}
+function kpis(rows,all){
+  const rt=rated(rows),rtA=rated(all),cr=rows.filter(r=>r.cost>0),ca=all.filter(r=>r.cost>0);
+  const D=[
+    {ic:"store",l:"Restaurants",v:rows.length,f:v=>nf(Math.round(v)),b:all.length,fd:v=>pct(v,all.length)+"% of total",c:"var(--acc)"},
+    {ic:"star",l:"Avg rating",v:rt.length?avg(rt.map(r=>r.rating)):0,f:v=>v?v.toFixed(2):"—",b:rtA.length?avg(rtA.map(r=>r.rating)):0,d:2,u:"",c:"var(--amber)"},
+    {ic:"cash",l:"Avg cost for two",v:cr.length?avg(cr.map(r=>r.cost)):0,f:v=>v?inr(v):"—",b:ca.length?avg(ca.map(r=>r.cost)):0,d:0,u:"₹",c:"var(--cyan)"},
+    {ic:"moped",l:"Online ordering",v:pct(rows.filter(r=>r.online).length,rows.length),f:v=>v.toFixed(1)+"%",b:pct(all.filter(r=>r.online).length,all.length),d:1,u:"pt",c:"var(--lime)"},
+    {ic:"calendar",l:"Table booking",v:pct(rows.filter(r=>r.book).length,rows.length),f:v=>v.toFixed(1)+"%",b:pct(all.filter(r=>r.book).length,all.length),d:1,u:"pt",c:"var(--violet)"},
+    {ic:"thumb",l:"Total votes",v:rows.reduce((a,b)=>a+(b.votes||0),0),f:v=>v>=1e5?(v/1e5).toFixed(1)+"L":nf(Math.round(v)),
+      fd:v=>nf(Math.round(v/Math.max(1,rows.length)))+" avg / restaurant",c:"var(--teal)"}];
+  const host=$("#kpis");
+  if(host.children.length!==D.length)host.innerHTML=D.map((d,i)=>
+    `<div class="kpi" style="--accent:${d.c}"><div class="lbl"><svg class="ic"><use href="#i-${d.ic}"/></svg>${d.l}</div><div class="val" id="kv${i}">—</div><div class="dlt" id="kd${i}"></div></div>`).join("");
+  D.forEach((d,i)=>{
+    tween($("#kv"+i),d.v,d.f);
+    let s="";
+    if(d.fd)s=d.fd(d.v);
+    else{const diff=d.v-d.b;
+      s=rows.length===all.length?"baseline":
+        `<span class="${diff>=0?"up":"dn"}">${diff>=0?"▲":"▼"} ${Math.abs(diff).toFixed(d.d)}${d.u}</span> vs all`}
+    $("#kd"+i).innerHTML=s});
+  const b=[];
+  if(F.loc.size)b.push(F.loc.size===1?[...F.loc][0]:F.loc.size+" locations");
+  if(F.cui.size)b.push(F.cui.size===1?[...F.cui][0]:F.cui.size+" cuisines");
+  if(F.svc.size)b.push(F.svc.size===1?[...F.svc][0]:F.svc.size+" services");
+  $("#sub").textContent="Bengaluru · "+nf(all.length)+" restaurants"+(b.length?" · "+b.join(" · "):"");
+}
+
+/* ============ 8. DRAWER ============ */
+function openDrawer(r){
+  const stars="★".repeat(Math.round(r.rating||0))+"☆".repeat(5-Math.round(r.rating||0));
+  $("#drawerBody").innerHTML=`
+    <h2><svg class="ic ic-lg" style="color:var(--acc)"><use href="#i-store"/></svg>${esc(r.name)}</h2>
+    <div class="note" style="margin-bottom:14px">${esc(r.loc)} · ${esc(r.typ)}</div>
+    <div style="font-family:var(--mono);font-size:26px;color:var(--amber);letter-spacing:2px">${stars}</div>
+    <div class="note" style="margin-bottom:14px">${r.rating!=null?r.rating.toFixed(1)+" / 5":"Not rated ("+esc(r.status)+")"}</div>
+    <div class="dl"><span><svg class="ic"><use href="#i-cash"/></svg>Cost for two</span><span>${r.cost?inr(r.cost):"—"}</span></div>
+    <div class="dl"><span><svg class="ic"><use href="#i-tag"/></svg>Price band</span><span>${r.cost?band(r.cost):"—"}</span></div>
+    <div class="dl"><span><svg class="ic"><use href="#i-thumb"/></svg>Votes</span><span>${nf(r.votes||0)}</span></div>
+    <div class="dl"><span><svg class="ic"><use href="#i-chat"/></svg>Reviews</span><span>${nf(r.reviews||0)}</span></div>
+    <div class="dl"><span><svg class="ic"><use href="#i-moped"/></svg>Online ordering</span><span>${r.online?"Yes":"No"}</span></div>
+    <div class="dl"><span><svg class="ic"><use href="#i-calendar"/></svg>Table booking</span><span>${r.book?"Yes":"No"}</span></div>
+    <div class="dl"><span><svg class="ic"><use href="#i-star"/></svg>Rating status</span><span>${esc(r.status)}</span></div>
+    <p class="note" style="margin:16px 0 4px">Cuisines</p><div class="tags">${r.cuisines.map(c=>`<span class="tag">${esc(c)}</span>`).join("")||"—"}</div>
+    <p class="note" style="margin:16px 0 4px">Services</p><div class="tags">${r.services.map(c=>`<span class="tag">${esc(c)}</span>`).join("")||"—"}</div>
+    <button class="btn prime" style="margin-top:20px;width:100%" id="dLoc"><svg class="ic"><use href="#i-filter"/></svg>Filter to ${esc(r.loc)}</button>`;
+  $("#dLoc").addEventListener("click",()=>{F.loc.clear();F.loc.add(r.loc);closeDrawer();render()});
+  $("#drawer").classList.add("open");$("#scrim").classList.add("on");
+}
+function closeDrawer(){$("#drawer").classList.remove("open");$("#scrim").classList.remove("on")}
+$("#drawerClose").addEventListener("click",closeDrawer);
+$("#scrim").addEventListener("click",()=>{closeDrawer();closePal()});
+
+/* ============ 9. PAGES ============ */
+function pOverview(rows){
+  const L=sortM(cnt(rows,r=>r.loc)).slice(0,14).map(([label,value])=>({label,value}));
+  const st=stats(rows,r=>r.loc);
+  bars($("#ovLoc"),L,{key:"loc",fmt:v=>nf(v),tip:i=>{const o=st.get(i.label);
+    return `<b>${esc(i.label)}</b><br>${nf(o.n)} restaurants<br>${o.rs.length?avg(o.rs).toFixed(2)+"★ avg":"unrated"}<br>${o.cn?inr(o.cs/o.cn)+" for two":""}`}});
+  const LR=[...st.entries()].filter(([,o])=>o.rs.length>=100).map(([label,o])=>({label,value:avg(o.rs),o}))
+    .sort((a,b)=>b.value-a.value).slice(0,14);
+  bars($("#ovLocRate"),LR,{key:"loc",cls:"c3",fmt:v=>v.toFixed(2)+"★",max:5,
+    empty:"No location has 100+ rated restaurants here.",
+    tip:i=>`<b>${esc(i.label)}</b><br>${i.value.toFixed(2)}★ across ${nf(i.o.rs.length)} rated`});
+  const S=sortM(cntM(rows,"services")).map(([label,value])=>({label,value}));
+  bars($("#ovSvc"),S,{key:"svc",cls:"c2",fmt:v=>nf(v)+" · "+pct(v,rows.length)+"%"});
+  const T=sortM(cnt(rows,r=>r.typ)).slice(0,12).map(([label,value])=>({label,value}));
+  bars($("#ovTyp"),T,{key:"typ",cls:"c4",fmt:v=>nf(v)+" · "+pct(v,rows.length)+"%"});
+  // bubble
+  const W=900,H=380,P={l:60,r:20,t:18,b:44};
+  const pts=[...st.entries()].filter(([,o])=>o.rs.length>=40&&o.cn>=40)
+    .map(([k,o])=>({k,x:o.cs/o.cn,y:avg(o.rs),n:o.n}));
+  const svg=$("#ovBubble");
+  if(!pts.length){svg.innerHTML=`<text x="450" y="190" text-anchor="middle" fill="#626B84" font-size="14">Not enough data to plot</text>`;return}
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);
+  const x0=Math.min(...xs)*.85,x1=Math.max(...xs)*1.1,y0=Math.min(...ys)-.15,y1=Math.max(...ys)+.15;
+  const X=v=>P.l+(v-x0)/(x1-x0||1)*(W-P.l-P.r),Y=v=>H-P.b-(v-y0)/(y1-y0||1)*(H-P.t-P.b);
+  const rmax=Math.max(...pts.map(p=>p.n));
+  let g="";
+  for(let i=0;i<=4;i++){const v=y0+(y1-y0)*i/4;
+    g+=`<line x1="${P.l}" x2="${W-P.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/>
+        <text x="${P.l-9}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="var(--txt-3)">${v.toFixed(1)}★</text>`}
+  for(let i=0;i<=4;i++){const v=x0+(x1-x0)*i/4;
+    g+=`<text x="${X(v)}" y="${H-18}" text-anchor="middle" font-size="11" fill="var(--txt-3)">₹${Math.round(v)}</text>`}
+  g+=`<text x="${W/2}" y="${H-3}" text-anchor="middle" font-size="10" fill="var(--txt-3)" letter-spacing="1.5">AVG COST FOR TWO</text>`;
+  pts.sort((a,b)=>b.n-a.n).forEach(p=>{
+    const on=F.loc.has(p.k),r=8+Math.sqrt(p.n/rmax)*26;
+    g+=`<circle class="bub" data-k="${esc(p.k)}" data-n="${p.n}" data-x="${Math.round(p.x)}" data-y="${p.y.toFixed(2)}"
+      cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="${r.toFixed(1)}"
+      fill="${on?"var(--acc)":"var(--cyan)"}" fill-opacity="${on?.65:.28}" stroke="${on?"var(--acc)":"var(--cyan)"}" style="cursor:pointer"/>`});
+  svg.innerHTML=g;
+  svg.querySelectorAll(".bub").forEach(c=>{
+    c.addEventListener("mouseenter",e=>tipShow(e,`<b>${esc(c.dataset.k)}</b><br>${nf(+c.dataset.n)} restaurants<br>${c.dataset.y}★ · ₹${nf(+c.dataset.x)} for two`));
+    c.addEventListener("mouseleave",tipHide);
+    c.addEventListener("click",()=>{tipHide();F.loc.has(c.dataset.k)?F.loc.delete(c.dataset.k):F.loc.add(c.dataset.k);render()})});
+}
+
+function pCuisine(rows){
+  const cs=stats(rows,r=>r.cuisines);
+  const C=sortM(cntM(rows,"cuisines")).slice(0,15).map(([label,value])=>({label,value}));
+  bars($("#cuCount"),C,{key:"cui",fmt:v=>nf(v),tip:i=>{const o=cs.get(i.label);
+    return `<b>${esc(i.label)}</b><br>${nf(o.n)} restaurants<br>${o.rs.length?avg(o.rs).toFixed(2)+"★":"unrated"} · ${o.cn?inr(o.cs/o.cn):"—"}`}});
+  const R=[...cs.entries()].filter(([,o])=>o.rs.length>=80).map(([label,o])=>({label,value:avg(o.rs),o}))
+    .sort((a,b)=>b.value-a.value).slice(0,15);
+  bars($("#cuRate"),R,{key:"cui",cls:"c3",fmt:v=>v.toFixed(2)+"★",max:5,
+    empty:"No cuisine has 80+ rated restaurants here.",
+    tip:i=>`<b>${esc(i.label)}</b><br>${i.value.toFixed(2)}★ · ${nf(i.o.rs.length)} rated`});
+  const bs=stats(rows.filter(r=>r.cost>0),r=>band(r.cost));
+  const seq=BANDS.map(b=>b[2]).filter(b=>bs.has(b));
+  const svg=$("#cuLine");
+  if(seq.length<2){svg.innerHTML=`<text x="310" y="140" text-anchor="middle" fill="var(--txt-3)" font-size="13">Widen the cost filter to compare bands</text>`}
+  else{
+    const W=620,H=280,P={l:46,r:16,t:16,b:56};
+    const pts=seq.map((b,i)=>({b,v:bs.get(b).rs.length?avg(bs.get(b).rs):0,n:bs.get(b).n,i}));
+    const vs=pts.map(p=>p.v).filter(v=>v>0);
+    const y0=Math.min(...vs)-.2,y1=Math.max(...vs)+.2;
+    const X=i=>P.l+(i/(seq.length-1))*(W-P.l-P.r),Y=v=>H-P.b-(v-y0)/((y1-y0)||1)*(H-P.t-P.b);
+    let g="";
+    for(let i=0;i<=3;i++){const v=y0+(y1-y0)*i/3;
+      g+=`<line x1="${P.l}" x2="${W-P.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/>
+          <text x="${P.l-8}" y="${Y(v)+4}" text-anchor="end" font-size="10" fill="var(--txt-3)">${v.toFixed(2)}</text>`}
+    const d=pts.map((p,i)=>(i?"L":"M")+X(i).toFixed(1)+" "+Y(p.v).toFixed(1)).join(" ");
+    g+=`<path d="${d} L ${X(pts.length-1).toFixed(1)} ${H-P.b} L ${P.l} ${H-P.b} Z" fill="var(--acc)" fill-opacity=".12"/>`;
+    g+=`<path d="${d}" fill="none" stroke="var(--acc)" stroke-width="2.5" stroke-linejoin="round"/>`;
+    pts.forEach((p,i)=>{g+=`<circle class="lp" data-b="${esc(p.b)}" data-v="${p.v.toFixed(2)}" data-n="${p.n}"
+      cx="${X(i).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="6" fill="var(--bg)" stroke="var(--acc)" stroke-width="2.5" style="cursor:pointer"/>
+      <text x="${X(i).toFixed(1)}" y="${H-32}" text-anchor="middle" font-size="9.5" fill="var(--txt-3)">${esc(p.b.replace("₹","").replace(",",""))}</text>`});
+    svg.innerHTML=g;
+    svg.querySelectorAll(".lp").forEach(c=>{
+      c.addEventListener("mouseenter",e=>tipShow(e,`<b>${esc(c.dataset.b)}</b><br>${c.dataset.v}★ avg<br>${nf(+c.dataset.n)} restaurants`));
+      c.addEventListener("mouseleave",tipHide)});
+  }
+  const B=BANDS.map(b=>b[2]).filter(b=>bs.has(b)).map(b=>({label:b,value:bs.get(b).n,o:bs.get(b)}));
+  bars($("#cuBands"),B,{cls:"c2",fmt:v=>nf(v)+" · "+pct(v,rows.length)+"%",
+    tip:i=>`<b>${esc(i.label)}</b><br>${i.o.rs.length?avg(i.o.rs).toFixed(2)+"★ avg":"unrated"}`});
+  const hi=rated(rows.filter(r=>r.cost>1050)),lo=rated(rows.filter(r=>r.cost>0&&r.cost<=600));
+  $("#cuNote").textContent=(hi.length>20&&lo.length>20)
+    ? "Above ₹1,050 for two averages "+avg(hi.map(r=>r.rating)).toFixed(2)+"★ against "+avg(lo.map(r=>r.rating)).toFixed(2)+
+      "★ under ₹600 — a "+(avg(hi.map(r=>r.rating))-avg(lo.map(r=>r.rating))).toFixed(2)+" star gap. Price is the clearest divide in the data."
+    : "Widen the cost filter to compare cheap and premium brackets.";
+}
+
+function sortTable(id,rows,cols,key){
+  const [sk,sd]=SORT[key];
+  rows.sort((a,b)=>{const x=a[sk],y=b[sk];
+    if(typeof x==="string")return sd*x.localeCompare(y);return sd*((x||0)-(y||0))});
+  const el=$("#"+id);
+  el.innerHTML="<thead><tr>"+cols.map(c=>
+    `<th class="${c.num?"num":""} ${sk===c.k?"sorted":""}" data-k="${c.k}">${c.t} <span class="ar">${sk===c.k?(sd<0?"▼":"▲"):"↕"}</span></th>`).join("")+"</tr></thead><tbody>"+
+    (rows.length?rows.map((r,i)=>"<tr data-i='"+i+"'>"+cols.map(c=>`<td class="${c.num?"num":""}">${c.f(r)}</td>`).join("")+"</tr>").join("")
+      :`<tr><td colspan="${cols.length}" class="empty">No rows match these filters.</td></tr>`)+"</tbody>";
+  el.querySelectorAll("th").forEach(th=>th.addEventListener("click",()=>{
+    const k=th.dataset.k;SORT[key]=[k,SORT[key][0]===k?-SORT[key][1]:-1];render()}));
+  return rows;
+}
+
+function pService(rows){
+  const st=stats(rows,r=>r.services);
+  let list=[...st.entries()].map(([k,o])=>({svc:k,n:o.n,rate:o.rs.length?avg(o.rs):0,cost:o.cn?o.cs/o.cn:0,onl:pct(o.on,o.n),vt:o.vt}));
+  sortTable("svcTbl",list,[
+    {k:"svc",t:"Service",f:r=>esc(r.svc)},
+    {k:"n",t:"Count",num:1,f:r=>nf(r.n)},
+    {k:"rate",t:"Rating",num:1,f:r=>r.rate?r.rate.toFixed(2):"—"},
+    {k:"cost",t:"Cost",num:1,f:r=>r.cost?inr(r.cost):"—"},
+    {k:"onl",t:"% online",num:1,f:r=>r.onl+"%"}],"svc");
+  $("#svcTbl").querySelectorAll("tbody tr[data-i]").forEach(tr=>tr.addEventListener("click",()=>{
+    const s=list[+tr.dataset.i].svc;F.svc.has(s)?F.svc.delete(s):F.svc.add(s);render()}));
+  const on=rows.filter(r=>r.online),off=rows.filter(r=>!r.online);
+  const mk=(l,a)=>({label:l,value:rated(a).length?avg(rated(a).map(r=>r.rating)):0,n:a.length,
+    cost:a.filter(x=>x.cost>0).length?avg(a.filter(x=>x.cost>0).map(x=>x.cost)):0});
+  const oi=[mk("Offers online ordering",on),mk("No online ordering",off)];
+  bars($("#svcOn"),oi,{max:5,fmt:v=>v?v.toFixed(2)+"★":"—",
+    tip:i=>`<b>${esc(i.label)}</b><br>${nf(i.n)} restaurants<br>${i.cost?inr(i.cost)+" for two":""}`});
+  const d=oi[0].value-oi[1].value;
+  $("#svcNote").textContent=(on.length>10&&off.length>10)
+    ? "Delivery-enabled restaurants rate "+(d>=0?"+":"−")+Math.abs(d).toFixed(2)+" against those without, and are "+
+      pct(on.length,rows.length)+"% of this selection. Real, but small next to price."
+    : "Clear the online-ordering filter to compare both groups.";
+  bars($("#svcBook"),[{label:"Takes table bookings",value:rows.filter(r=>r.book).length},
+    {label:"Walk-in only",value:rows.filter(r=>!r.book).length}],{cls:"c4",fmt:v=>nf(v)+" · "+pct(v,rows.length)+"%"});
+  const cb=sortM(cnt(rows,r=>[...r.services].sort().join(" + ")||"—")).slice(0,10).map(([label,value])=>({label,value}));
+  bars($("#svcCombo"),cb,{cls:"c3",fmt:v=>nf(v)+" · "+pct(v,rows.length)+"%"});
+}
+
+function pRatings(rows){
+  const rt=rated(rows),B=new Array(35).fill(0);
+  rt.forEach(r=>B[Math.min(34,Math.max(0,Math.round((r.rating-1.5)*10)))]++);
+  const mx=Math.max(...B)||1;
+  $("#rtHist").innerHTML=B.map((v,i)=>{const val=1.5+i/10;
+    const dim=F.rateBand&&(val<F.rateBand[0]-.001||val>F.rateBand[1]+.001);
+    return `<div class="hcol ${dim?"dim":""}" data-v="${val.toFixed(1)}" data-c="${v}"><div class="hbar" style="height:${v/mx*100}%"></div></div>`}).join("");
+  let drag=null;
+  $("#rtHist").querySelectorAll(".hcol").forEach(c=>{
+    c.addEventListener("mouseenter",e=>tipShow(e,`<b>${c.dataset.v}★</b><br>${nf(+c.dataset.c)} restaurants`));
+    c.addEventListener("mouseleave",tipHide);
+    c.addEventListener("mousedown",()=>{drag=+c.dataset.v});
+    c.addEventListener("mouseup",()=>{const b=+c.dataset.v;
+      if(drag==null)return;F.rateBand=[Math.min(drag,b),Math.max(drag,b)];drag=null;tipHide();render()});
+  });
+  $("#histClear").onclick=()=>{F.rateBand=null;render()};
+  const order=["Rated","New","Not rated","Missing"],col={Rated:"var(--lime)",New:"var(--amber)","Not rated":"var(--violet)",Missing:"var(--slate)"};
+  const sc=cnt(rows,r=>r.status),tot=rows.length||1;let off=0,g="";
+  order.filter(k=>sc.get(k)).forEach(k=>{const fr=sc.get(k)/tot,dash=fr*283;
+    g+=`<circle cx="65" cy="65" r="45" fill="none" stroke="${col[k]}" stroke-width="18" stroke-dasharray="${dash.toFixed(1)} ${(283-dash).toFixed(1)}"
+      stroke-dashoffset="${(-off).toFixed(1)}" transform="rotate(-90 65 65)" style="cursor:pointer" class="arc" data-k="${k}" data-n="${sc.get(k)}"/>`;off+=dash});
+  g+=`<text x="65" y="62" text-anchor="middle" font-size="17" font-weight="700" fill="var(--txt)">${pct(sc.get("Rated")||0,tot)}%</text>
+      <text x="65" y="77" text-anchor="middle" font-size="8" fill="var(--txt-3)" letter-spacing="1">RATED</text>`;
+  $("#rtDonut").innerHTML=g;
+  $("#rtDonut").querySelectorAll(".arc").forEach(a=>{
+    a.addEventListener("mouseenter",e=>tipShow(e,`<b>${a.dataset.k}</b><br>${nf(+a.dataset.n)} · ${pct(+a.dataset.n,tot)}%`));
+    a.addEventListener("mouseleave",tipHide);
+    a.addEventListener("click",()=>{tipHide();F.stat=F.stat===a.dataset.k?"":a.dataset.k;$("#selStat").value=F.stat;render()})});
+  $("#rtLeg").innerHTML=order.filter(k=>sc.get(k)).map(k=>
+    `<div class="dl"><span><i class="dot" style="background:${col[k]}"></i>${k}</span><span>${nf(sc.get(k))} · ${pct(sc.get(k),tot)}%</span></div>`).join("");
+  // scatter
+  const W=640,H=320,P={l:52,r:16,t:14,b:40};
+  const smp=rt.length>2000?rt.filter(()=>Math.random()<2000/rt.length):rt;
+  const X=v=>P.l+(Math.log10(Math.max(1,v)+1)/Math.log10(20000))*(W-P.l-P.r),Y=v=>H-P.b-((v-1.5)/3.5)*(H-P.t-P.b);
+  let s=`<rect x="${P.l}" y="${P.t}" width="${W-P.l-P.r}" height="${H-P.t-P.b}" fill="var(--panel-2)" rx="6"/>`;
+  [2,3,4,5].forEach(v=>s+=`<line x1="${P.l}" x2="${W-P.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/>
+    <text x="${P.l-8}" y="${Y(v)+4}" text-anchor="end" font-size="10" fill="var(--txt-3)">${v}.0★</text>`);
+  [10,100,1000,10000].forEach(v=>s+=`<text x="${X(v)}" y="${H-18}" text-anchor="middle" font-size="10" fill="var(--txt-3)">${v>=1000?v/1000+"k":v}</text>`);
+  s+=`<text x="${(W+P.l)/2}" y="${H-4}" text-anchor="middle" font-size="9" fill="var(--txt-3)" letter-spacing="1.5">VOTES</text>`;
+  s+=smp.map((r,i)=>`<circle class="pt" data-i="${i}" cx="${X(r.votes).toFixed(1)}" cy="${Y(r.rating).toFixed(1)}" r="2.6"
+    fill="var(--cyan)" fill-opacity=".35" style="cursor:pointer"/>`).join("");
+  $("#rtScat").innerHTML=s;
+  $("#rtScat").querySelectorAll(".pt").forEach(c=>{const r=smp[+c.dataset.i];
+    c.addEventListener("mouseenter",e=>{c.setAttribute("r",5);c.setAttribute("fill","var(--acc)");c.setAttribute("fill-opacity","1");
+      tipShow(e,`<b>${esc(r.name)}</b><br>${esc(r.loc)}<br>${r.rating.toFixed(1)}★ · ${nf(r.votes)} votes · ${r.cost?inr(r.cost):"—"}`)});
+    c.addEventListener("mouseleave",()=>{c.setAttribute("r",2.6);c.setAttribute("fill","var(--cyan)");c.setAttribute("fill-opacity",".35");tipHide()});
+    c.addEventListener("click",()=>{tipHide();openDrawer(r)})});
+  const many=rt.filter(r=>r.votes>=500),few=rt.filter(r=>r.votes<50);
+  $("#rtNote").textContent=(many.length>10&&few.length>10)
+    ? "500+ votes averages "+avg(many.map(r=>r.rating)).toFixed(2)+"★; under 50 votes averages "+avg(few.map(r=>r.rating)).toFixed(2)+
+      "★. Attention and approval travel together."
+    : "Not enough spread in votes here to compare popular and quiet restaurants.";
+  $("#minVotes").textContent=MINV+"+ votes";
+  $("#minVotes").onclick=()=>{MINV=MINV===200?0:(MINV===0?1000:200);render()};
+  const top=rt.filter(r=>r.votes>=MINV).slice(0,400);
+  const sorted=sortTable("rtTop",top,[
+    {k:"name",t:"Restaurant",f:r=>esc(r.name)},
+    {k:"loc",t:"Location",f:r=>esc(r.loc)},
+    {k:"rating",t:"Rating",num:1,f:r=>r.rating.toFixed(1)},
+    {k:"votes",t:"Votes",num:1,f:r=>nf(r.votes)},
+    {k:"cost",t:"Cost",num:1,f:r=>r.cost?inr(r.cost):"—"}],"top").slice(0,60);
+  $("#rtTop").querySelectorAll("tbody tr[data-i]").forEach(tr=>
+    tr.addEventListener("click",()=>openDrawer(sorted[+tr.dataset.i]||top[+tr.dataset.i])));
+}
+
+const TF=[["loc","Location",r=>r.loc],["typ","Format",r=>r.typ],["svc","Service",r=>r.services],
+  ["cui","Cuisine",r=>r.cuisines],["band","Cost band",r=>r.cost>0?band(r.cost):null],
+  ["stat","Rating status",r=>r.status],["on","Online order",r=>r.online?"Offers online order":"No online order"]];
+function tree(rows){
+  const host=$("#tree");host.innerHTML="";let cur=rows;
+  const rt=rated(cur);
+  const c0=document.createElement("div");c0.className="tcol";
+  c0.innerHTML=`<h4>Root</h4><div class="node sel">All restaurants<b>${nf(cur.length)}</b><small>${rt.length?avg(rt.map(r=>r.rating)).toFixed(2)+"★":"—"}</small></div>`;
+  host.appendChild(c0);
+  TREE.forEach((step,li)=>{
+    const f=TF.find(x=>x[0]===step.field),m=stats(cur,f[2]);
+    const items=[...m.entries()].sort((a,b)=>b[1].n-a[1].n).slice(0,10);
+    const col=document.createElement("div");col.className="tcol";
+    col.innerHTML=`<h4>${f[1]}</h4>`+items.map(([k,o])=>
+      `<button class="node ${step.value===k?"sel":""}" data-li="${li}" data-v="${esc(k)}" type="button">${esc(k)}
+        <b>${nf(o.n)}</b><small>${o.rs.length?avg(o.rs).toFixed(2)+"★":"unrated"}</small></button>`).join("");
+    host.appendChild(col);
+    if(step.value!=null)cur=cur.filter(r=>{const v=f[2](r);return Array.isArray(v)?v.includes(step.value):v===step.value});
+  });
+  const used=new Set(TREE.map(t=>t.field)),rem=TF.filter(f=>!used.has(f[0])),last=TREE[TREE.length-1];
+  if(rem.length&&(!TREE.length||(last&&last.value!=null))&&TREE.length<4){
+    const col=document.createElement("div");col.className="tcol";
+    col.innerHTML=`<h4>Split by</h4>`+rem.map(f=>`<button class="node add" data-add="${f[0]}" type="button">${f[1]}<small>add level</small></button>`).join("");
+    host.appendChild(col)}
+  host.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{TREE.push({field:b.dataset.add,value:null});render()});
+  host.querySelectorAll("[data-li]").forEach(b=>b.onclick=()=>{const li=+b.dataset.li,v=b.dataset.v;
+    TREE=TREE.slice(0,li+1);TREE[li].value=TREE[li].value===v?null:v;render()});
+  $("#treePath").textContent=TREE.filter(t=>t.value).length
+    ? "Path: All → "+TREE.filter(t=>t.value).map(t=>t.value).join(" → ")+"   ·   "+nf(cur.length)+" restaurants"
+    : "Root: all "+nf(rows.length)+" restaurants in selection. Pick a field to split by.";
+}
+
+function pAI(rows){
+  const rt=rated(rows),base=rt.length?avg(rt.map(r=>r.rating)):0,C=[];
+  const grp=(f,kind,fk)=>{const m=stats(rt,f);m.forEach((o,k)=>{
+    if(o.rs.length>=Math.max(40,rt.length*.01))C.push({name:k,kind,n:o.rs.length,val:avg(o.rs),fk})})};
+  grp(r=>band(r.cost),"Cost for two",null);
+  grp(r=>r.typ,"Format","typ");
+  grp(r=>r.cuisines,"Cuisine","cui");
+  grp(r=>r.loc,"Location","loc");
+  grp(r=>r.services,"Service","svc");
+  const on=rt.filter(r=>r.online),off=rt.filter(r=>!r.online),bk=rt.filter(r=>r.book);
+  if(on.length>=40)C.push({name:"Offers online ordering",kind:"Delivery",n:on.length,val:avg(on.map(r=>r.rating))});
+  if(off.length>=40)C.push({name:"No online ordering",kind:"Delivery",n:off.length,val:avg(off.map(r=>r.rating))});
+  if(bk.length>=40)C.push({name:"Takes table bookings",kind:"Booking",n:bk.length,val:avg(bk.map(r=>r.rating))});
+  C.forEach(c=>c.lift=c.val-base);
+  const top=C.sort((a,b)=>Math.abs(b.lift)-Math.abs(a.lift)).slice(0,9);
+  const mx=Math.max(...top.map(c=>Math.abs(c.lift)),.01);
+  $("#ki").innerHTML=top.length?top.map((c,i)=>{
+    const w=Math.abs(c.lift)/mx*50,pos=c.lift>=0;
+    return `<div class="ki" ${c.fk?`data-fk="${c.fk}" data-fv="${esc(c.name)}" style="cursor:pointer"`:""}>
+      <span class="nm">${esc(c.name)}<small>${c.kind} · ${nf(c.n)} rated · ${c.val.toFixed(2)}★</small></span>
+      <span class="vv" style="color:${pos?"var(--lime)":"var(--amber)"}">${pos?"+":"−"}${Math.abs(c.lift).toFixed(2)}</span>
+      <span class="bar"><span class="mid"></span><i style="width:${w}%;left:${pos?50:50-w}%;background:${pos?"var(--lime)":"var(--amber)"}"></i></span>
+    </div>`}).join(""):'<div class="empty">Too few rated restaurants to rank influencers.</div>';
+  $("#ki").querySelectorAll("[data-fk]").forEach(d=>d.onclick=()=>{
+    const s=F[d.dataset.fk];s.has(d.dataset.fv)?s.delete(d.dataset.fv):s.add(d.dataset.fv);render()});
+  $("#kiNote").textContent=top.length?"Baseline is "+base.toFixed(2)+"★ for this selection. Bars show distance from it; groups need 40+ rated restaurants. Click a row to filter.":"";
+  const QA=[
+    ["Top location",()=>{const m=sortM(cnt(rows,r=>r.loc));if(!m.length)return "Nothing in this selection.";
+      return m.length===1?`Only <b>${esc(m[0][0])}</b> is in play, with <b>${nf(m[0][1])}</b> restaurants.`
+        :`<b>${esc(m[0][0])}</b> leads with <b>${nf(m[0][1])}</b> restaurants, ahead of ${esc(m[1][0])} at ${nf(m[1][1])}.`}],
+    ["Top cuisine",()=>{const m=sortM(cntM(rows,"cuisines"));return m.length?`<b>${esc(m[0][0])}</b> appears on <b>${nf(m[0][1])}</b> menus — ${pct(m[0][1],rows.length)}% of this selection.`:"No cuisines listed."}],
+    ["Best rated area",()=>{const s=stats(rows,r=>r.loc),l=[...s.entries()].filter(([,o])=>o.rs.length>=60)
+      .map(([k,o])=>[k,avg(o.rs),o.rs.length]).sort((a,b)=>b[1]-a[1]);
+      return l.length?`<b>${esc(l[0][0])}</b> averages <b>${l[0][1].toFixed(2)}★</b> across ${nf(l[0][2])} rated restaurants.`:"No area has 60+ rated restaurants here."}],
+    ["Does price buy quality?",()=>{const h=rated(rows.filter(r=>r.cost>1050)),l=rated(rows.filter(r=>r.cost>0&&r.cost<=1050));
+      return h.length>5&&l.length>5?`Above ₹1,050: <b>${avg(h.map(r=>r.rating)).toFixed(2)}★</b> (${nf(h.length)}). At or below: <b>${avg(l.map(r=>r.rating)).toFixed(2)}★</b> (${nf(l.length)}). Gap of ${(avg(h.map(r=>r.rating))-avg(l.map(r=>r.rating))).toFixed(2)} stars.`:"Not enough priced restaurants on both sides of ₹1,050."}],
+    ["How many unrated?",()=>{const n=rows.filter(r=>r.rating==null).length,w=rows.filter(r=>r.status==="New").length;
+      return `<b>${nf(n)}</b> carry no usable rating (${pct(n,rows.length)}%), of which <b>${nf(w)}</b> are flagged New rather than missing.`}],
+    ["Typical meal cost",()=>{const c=rows.filter(r=>r.cost>0).map(r=>r.cost);if(!c.length)return "No cost data here.";
+      const s=[...c].sort((a,b)=>a-b);return `Mean <b>${inr(avg(c))}</b> for two, median <b>${inr(s[Math.floor(s.length/2)])}</b>. The gap says a few premium rooms pull the average up.`}],
+    ["Dominant format",()=>{const m=sortM(cnt(rows,r=>r.typ));if(!m.length)return "Nothing here.";
+      const h=`<b>${esc(m[0][0])}</b> with <b>${nf(m[0][1])}</b> listings (${pct(m[0][1],rows.length)}%)`;
+      return m.length===1?h+" — the only format present.":h+`, followed by ${esc(m[1][0])}.`}],
+    ["Delivery penetration",()=>`<b>${pct(rows.filter(r=>r.online).length,rows.length)}%</b> offer online ordering and <b>${pct(rows.filter(r=>r.book).length,rows.length)}%</b> take table bookings — Bengaluru orders in far more than it reserves.`]
+  ];
+  $("#qa").innerHTML=QA.map((q,i)=>`<button type="button" data-q="${i}" class="${QAi===i?"on":""}">${esc(q[0])}</button>`).join("");
+  $("#qa").querySelectorAll("button").forEach(b=>b.onclick=()=>{QAi=+b.dataset.q;
+    $("#qaOut").innerHTML=QA[QAi][1]();$$("#qa button").forEach(x=>x.classList.toggle("on",x===b))});
+  if(QAi!=null)$("#qaOut").innerHTML=QA[QAi][1]();
+  tree(rows);
+}
+$("#treeReset").onclick=()=>{TREE=[];render()};
+
+/* ============ 10. COMMAND PALETTE ============ */
+const PAL=$("#pal");let palItems=[],palSel=0;
+function openPal(){PAL.classList.add("on");$("#scrim").classList.add("on");$("#palQ").value="";$("#palQ").focus();buildPal("")}
+function closePal(){PAL.classList.remove("on");$("#scrim").classList.remove("on")}
+function buildPal(q){
+  const out=[];const ql=q.toLowerCase();
+  [["overview","Overview","grid"],["cuisine","Cuisine & Cost","bowl"],["service","Service Types","moped"],["ratings","Ratings Deep Dive","star"],["ai","AI Insights","spark"]]
+    .filter(p=>!ql||p[1].toLowerCase().includes(ql))
+    .forEach(p=>out.push({k:"Page",ic:p[2],t:p[1],d:"go",run:()=>document.querySelector(`.tab[data-page="${p[0]}"]`).click()}));
+  if(ql){
+    sortM(cnt(ROWS,r=>r.loc)).filter(([v])=>v.toLowerCase().includes(ql)).slice(0,5)
+      .forEach(([v,c])=>out.push({k:"Location",ic:"pin",t:v,d:nf(c),run:()=>{F.loc.add(v);render()}}));
+    sortM(cntM(ROWS,"cuisines")).filter(([v])=>v.toLowerCase().includes(ql)).slice(0,5)
+      .forEach(([v,c])=>out.push({k:"Cuisine",ic:"bowl",t:v,d:nf(c),run:()=>{F.cui.add(v);render()}}));
+    ROWS.filter(r=>r.name.toLowerCase().includes(ql)).slice(0,7)
+      .forEach(r=>out.push({k:"Restaurant",ic:"store",t:r.name,d:(r.rating?r.rating.toFixed(1)+"★":"—")+" · "+r.loc,run:()=>openDrawer(r)}));
+  }
+  out.push({k:"Action",ic:"reset",t:"Reset all filters",d:"",run:resetAll});
+  out.push({k:"Action",ic:"sun",t:"Toggle theme",d:"",run:()=>$("#themeBtn").click()});
+  palItems=out.slice(0,26);palSel=0;drawPal();
+}
+function drawPal(){
+  $("#palList").innerHTML=palItems.length?palItems.map((i,ix)=>
+    `<div class="pal-item ${ix===palSel?"sel":""}" data-i="${ix}"><svg class="ic"><use href="#i-${i.ic||"page"}"/></svg><span class="k">${i.k}</span><span>${esc(i.t)}</span><span class="d">${esc(i.d)}</span></div>`).join("")
+    :'<div class="empty">No matches</div>';
+  $("#palList").querySelectorAll(".pal-item").forEach(el=>el.onclick=()=>{palItems[+el.dataset.i].run();closePal()});
+}
+$("#openPal").onclick=openPal;
+$("#palQ").addEventListener("input",e=>buildPal(e.target.value));
+document.addEventListener("keydown",e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="k"){e.preventDefault();PAL.classList.contains("on")?closePal():openPal();return}
+  if(e.key==="Escape"){closePal();closeDrawer();$$(".dd").forEach(d=>d.classList.remove("open"))}
+  if(!PAL.classList.contains("on"))return;
+  if(e.key==="ArrowDown"){e.preventDefault();palSel=Math.min(palItems.length-1,palSel+1);drawPal()}
+  if(e.key==="ArrowUp"){e.preventDefault();palSel=Math.max(0,palSel-1);drawPal()}
+  if(e.key==="Enter"&&palItems[palSel]){palItems[palSel].run();closePal()}
+});
+
+/* ============ 11. RENDER ============ */
+function render(){
+  const rows=applyF(ROWS);
+  chips();kpis(rows,ROWS);
+  if(PAGE==="overview")pOverview(rows);
+  else if(PAGE==="cuisine")pCuisine(rows);
+  else if(PAGE==="service")pService(rows);
+  else if(PAGE==="ratings")pRatings(rows);
+  else if(PAGE==="ai")pAI(rows);
+}
+render();
+</script>
+</body>
+</html>
