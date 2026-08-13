@@ -2,9 +2,11 @@
 
 An end-to-end data analysis project on Zomato's Bangalore restaurant listings, taking raw scraped data through cleaning, a SQL Server database, and an interactive Power BI dashboard with AI-assisted analysis.
 
-## Live Dashboard
+## Live Dashboards
 
 **[View the interactive dashboard](https://anushar-214.github.io/Zomata-Data-analysis/zomato-analysis-dashboard.html)** — a browser-based version of the analysis (`zomato-analysis-dashboard.html`), viewable without Power BI Desktop.
+
+**[Open the live Power BI report](https://app.powerbi.com/groups/a8b4bc89-bce5-4add-a0cb-f3674a2355e8/reports/3ff9037e-f7d1-48b2-ba69-019d083ac03e?ctid=d3de91d7-5bb6-4ce1-a775-489e8e7143a8&pbi_source=linkShare&bookmarkGuid=450cd111-44b0-49e9-91c6-735f43fa236d)** — the full multi-page report published to the Power BI Service, with all slicers and AI visuals. Requires signing in with a Microsoft account that has access to the workspace.
 
 ## Overview
 
